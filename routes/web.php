@@ -19,7 +19,7 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('/login/{CorreoElectronico}',[DatosController::class, 'loginUsuario']);
+Route::get('/login/{CorreoElectronico}/{Contraseña}',[DatosController::class, 'loginUsuario']);
 Route::get('/loginMovil',[DatosController::class, 'loginMovil'])->withoutMiddleware(VerifyCsrfToken::class);
 Route::get('/registro',[DatosController::class, 'registrarUsuario']);
 Route::post('/registro',[DatosController::class, 'registrarUsuario'])->withoutMiddleware(VerifyCsrfToken::class);
@@ -34,5 +34,9 @@ Route::get('/articulos/{codigoBarras}', [DatosController::class, 'consultarPorCo
 Route::get('/articulos-con-filtros', [DatosController::class, 'obtenerArticulosConFiltros']);
 Route::get('/obtener-nombre-departamento/{departamentoId}', [InventarioController::class, 'obtenerNombreDepartamento']);
 Route::get('/obtener-nombre-encargado/{encargadoId}', [InventarioController::class, 'obtenerNombreEncargado']);
+Route::put('/actualizar-articulo/{id}', [DatosController::class, 'updateArticulo']);
+Route::get('/guardar-Historial', [DatosController::class, 'guardarHistorial']);
+Route::post('/guardar-Historial', [DatosController::class, 'guardarHistorial'])->withoutMiddleware(VerifyCsrfToken::class);
+Route::get('/historial', [DatosController::class, 'mostrarHistorial']);
 
 

@@ -8,12 +8,12 @@ use App\Models\Departamento;
 use App\Models\Encargado;
 use App\Models\Articulo;
 use App\Models\Usuario;
+use App\Models\Historial;
+
 use Illuminate\Support\Facades\Validator;
 
 class DatosController extends Controller
 {
-   
-
     public function obtenerDatosParaSpinner()
     {
         $aulas = Aula::obtenerAulas();
@@ -98,20 +98,48 @@ class DatosController extends Controller
 
     return response()->json($articulo);
     }
-
-    public function loginUsuario($CorreoElectronico)
+    
+    public function loginUsuario($CorreoElectronico, $Contraseña)
     {
-        // Verificar si el correo electrónico existe
-        $usuario = Usuario::where('CorreoElectronico', $CorreoElectronico)->first();
+        // Verificar si el correo electrónico y contraseña existe
+        $usuario = Usuario::where('CorreoElectronico', $CorreoElectronico)
+                     ->where('Contraseña', $Contraseña)
+                     ->first();
     
         if ($usuario !== null) {
-            // El correo electrónico existe, puedes devolver la información del usuario
-            return response()->json(['usuario' => $usuario], 200);
-        } else {
+        $datos = [
+            'IDUsuario' =>  $usuario->IDUsuario,
+            'Nombre' => $usuario->Nombre,
+            'Apellido' => $usuario->Apellido,
+            'CorreoElectronico' => $usuario->CorreoElectronico,
+            'Contraseña' =>  $usuario->Contraseña,
+            'Tipo' => $usuario->Tipo
+        ];
+
+        // Enviar el arreglo en formato JSON
+        return response()->json($datos);
+              } 
+            else {
             // El correo electrónico no existe, devolver un error
-            return response()->json(['error' => 'Usuario no encontrado'], 404);
+            return "false";//response()->json(['error' => 'Usuario no encontrado'], 404);
         }
     }
+    /*public function loginUsuario($CorreoElectronico, $Contraseña)
+    {
+    // Verificar si el correo electrónico y la contraseña coinciden
+    $usuario = Usuario::where('CorreoElectronico', $CorreoElectronico)
+                     ->where('Contraseña', $Contraseña)
+                     ->first();
+
+    if ($usuario !== null) {
+        // El correo electrónico y la contraseña coinciden, puedes devolver la información del usuario
+        return response()->json(['usuario' => $usuario], 200);
+    } else {
+        // El correo electrónico y/o la contraseña no coinciden, devolver un error
+        return response()->json(['error' => 'Credenciales inválidas'], 401);
+    }
+    }
+*/
     public function registrarUsuario(Request $request)
     {
             $usuario = new Usuario();
@@ -120,6 +148,8 @@ class DatosController extends Controller
             $usuario->CorreoElectronico = $request->CorreoElectronico;
             $usuario->Contraseña = $request->Contraseña;
             $usuario->Tipo = $request->Tipo;
+            //$usuario->imageBase64 = $request->imageBase64;
+
             $usuario->save();
 
             return $usuario;
@@ -139,6 +169,8 @@ class DatosController extends Controller
         $articulo->informacion_adicional = $request->informacion_adicional;
         $articulo->fecha_creacion = $request->fecha_creacion;
         $articulo->fecha_actualizacion = $request->fecha_actualizacion;
+        $articulo->persona_id = $request->persona_id;
+        $articulo->modificador_id = $request->modificador_id;
 
         // Guardar el nuevo artículo en la base de datos
         $articulo->save();
@@ -146,4 +178,55 @@ class DatosController extends Controller
         return $request;
         // return response()->json(['mensaje' => 'Datos recibidos con éxito'], 200);
     }
+
+    public function updateArticulo(Request $request, $id)
+{
+    // Encuentra el artículo existente por ID
+    $articulo = Articulo::find($id);
+
+    // Verifica si el artículo existe
+    if (!$articulo) {
+        return response()->json(['mensaje' => 'Artículo no encontrado'], 404);
+    }
+
+    // Actualiza los campos del artículo con los nuevos valores del formulario
+    $articulo->codigo_barras = $request->codigo_barras;
+    $articulo->descripcion = $request->descripcion;
+    $articulo->encargado_id = $request->encargado_id;
+    $articulo->clasificacion = $request->clasificacion;
+    $articulo->aula_id = $request->aula_id;
+    $articulo->departamento_id = $request->departamento_id;
+    $articulo->estado = $request->estado;
+    $articulo->informacion_adicional = $request->informacion_adicional;
+    $articulo->fecha_actualizacion = obtenerFechaActual();
+    $articulo->persona_id = $request->persona_id;
+    $articulo->modificador_id = $request->modificador_id;
+
+    // Guarda los cambios en la base de datos
+    $articulo->save();
+
+    // Retorna una respuesta exitosa
+    return response()->json(['mensaje' => 'Artículo actualizado con éxito'], 200);
+}
+
+public function guardarHistorial(Request $request)
+    {
+        // Crear un nuevo modelo de Articulo
+        $historial = new Historial();
+        $historial->idUsuario = $request->idUsuario;
+        $historial->Movimiento = $request->Movimiento;
+        $historial->Articulo = $request->Articulo;
+        $historial->fecha = $request->fecha;
+        // Guardar el nuevo artículo en la base de datos
+        $historial->save();
+        // Retorna una respuesta exitosa
+        return $request;
+        // return response()->json(['mensaje' => 'Datos recibidos con éxito'], 200);
+    }
+
+    function mostrarHistorial() 
+    { 
+        return Historial::all(); 
+    }
+
 }
